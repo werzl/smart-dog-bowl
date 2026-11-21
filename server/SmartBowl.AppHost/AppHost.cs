@@ -19,4 +19,10 @@ else
     api.WithReference(database).WaitFor(database);
 }
 
+builder.AddViteApp("web", "../../web")
+    .WithEndpoint("http", endpoint => endpoint.Port = 5173)
+    .WithReference(api)
+    .WithEnvironment("API_BASE_URL", api.GetEndpoint("http"))
+    .WaitFor(api);
+
 builder.Build().Run();

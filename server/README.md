@@ -1,7 +1,7 @@
 # Local server
 
 The server uses .NET 10, Aspire 17, ASP.NET Core, and PostgreSQL 17.6.
-The AppHost starts the database and API. It also provides the Aspire dashboard.
+The AppHost starts the database, API, and React UI. It also provides the Aspire dashboard.
 The API applies versioned SQL migrations before it accepts requests.
 
 ## Start the server
@@ -20,6 +20,8 @@ dotnet run --project server/SmartBowl.AppHost
 3. Open the dashboard URL from the terminal.
 4. Open the API endpoint from the dashboard.
 
+The UI uses `http://localhost:5173`.
+See the [UI guide](../web/README.md) for frontend features and separate startup.
 The API uses `http://localhost:5200` when it runs directly.
 Aspire can assign a different port through its proxy. Use the API URL from the dashboard for requests.
 The dashboard uses `http://localhost:15888` by default. The terminal provides its login link.

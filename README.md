@@ -23,7 +23,7 @@ A battery-powered, raised water-bowl stand that weighs water and estimates a dog
 | Frontend | React + TypeScript + Vite PWA |
 | Observability | Aspire dashboard during development; optional Grafana |
 
-See [architecture](docs/architecture.md), [hardware](docs/hardware.md), [software](docs/software.md), and [roadmap](docs/roadmap.md).
+See [architecture](architecture.md), [hardware](hardware.md), [software](software.md), and [roadmap](roadmap.md).
 
 ## Important engineering risks
 
@@ -36,11 +36,17 @@ See [architecture](docs/architecture.md), [hardware](docs/hardware.md), [softwar
 
 Produce stable calibrated weight readings over USB, log a full day of readings, and assess noise, drift, drinking signatures and refill detection before building the final enclosure.
 
-## Local development (planned)
+## Local server
 
-- Install .NET SDK with Aspire tooling, Node.js, Docker, and a MicroPython-compatible ESP32 flashing tool.
-- Start TimescaleDB and API/worker through Aspire AppHost.
-- Run the React PWA with Vite.
-- Feed recorded sample readings to the API while hardware is being developed.
+The ASP.NET Core API, PostgreSQL database, and React UI run through Aspire.
+Development mode includes a mock bowl with 24 hours of readings.
+The DTOs follow the working Python calibration and weight values in `src/`.
 
-No runnable services have been implemented yet. This repository begins as a design specification.
+1. Start Docker with Linux containers.
+2. Run `dotnet run --project server/SmartBowl.AppHost` from the repository root.
+3. Open the dashboard URL from the terminal.
+
+Use the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
+See the [server guide](server/README.md) for API examples, database options, and tests.
+The UI runs at `http://localhost:5173`. See the [UI guide](web/README.md) for its features.
+The Python scripts remain unchanged.
