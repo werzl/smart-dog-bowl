@@ -26,7 +26,14 @@ export async function request<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(`/api/v1/devices${path}`, options);
+  return requestApi(`/devices${path}`, options);
+}
+
+export async function requestApi<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(`/api/v1${path}`, options);
   if (!response.ok) {
     if (response.status === 401)
       throw new Error("Enter a valid device API key in Settings.");

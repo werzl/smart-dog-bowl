@@ -126,10 +126,15 @@ public sealed class BowlRepository(NpgsqlDataSource dataSource)
             INSERT INTO weight_readings (device_id, sequence, observed_at, weight_grams, raw_reading)
             SELECT $1, incoming.sequence, incoming."observedAt", incoming."weightGrams", incoming."rawReading"
             FROM {source} ON CONFLICT DO NOTHING
+            RETURNING sequence, observed_at, weight_grams, raw_reading
             """, connection, transaction);
         insert.Parameters.AddWithValue(deviceId);
         insert.Parameters.AddWithValue(json);
-        var inserted = await insert.ExecuteNonQueryAsync(ct);
+        var added = new List<WeightReadingDto>();
+        await using (var reader = await insert.ExecuteReaderAsync(ct))
+            while (await reader.ReadAsync(ct)) added.Add(ReadReading(reader));
+        var inserted = added.Count;
+        await NotificationStore.ProcessReadingsAsync(connection, transaction, deviceId, added, ct);
         await using var seen = new NpgsqlCommand("UPDATE devices SET last_seen_at = now() WHERE device_id = $1", connection, transaction);
         seen.Parameters.AddWithValue(deviceId);
         await seen.ExecuteNonQueryAsync(ct);

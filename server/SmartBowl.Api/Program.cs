@@ -5,6 +5,7 @@ using Npgsql;
 using SmartBowl.Api;
 using SmartBowl.Api.Data;
 using SmartBowl.Api.Analysis;
+using SmartBowl.Api.Notifications;
 using SmartBowl.Contracts;
 using SmartBowl.ServiceDefaults;
 
@@ -40,6 +41,9 @@ builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document,
 builder.Services.AddSingleton(_ => NpgsqlDataSource.Create(builder.Configuration.GetConnectionString("bowldb")
     ?? throw new InvalidOperationException("Set ConnectionStrings:bowldb or start the API through Aspire.")));
 builder.Services.AddSingleton<BowlRepository>();
+builder.Services.AddSingleton<NotificationStore>();
+builder.Services.AddSingleton<IPushSender>(_ => new WebPushSender());
+builder.Services.AddHostedService<PushDeliveryWorker>();
 builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database");
 
 var app = builder.Build();
@@ -131,6 +135,30 @@ writes.MapPost("/{deviceId}/readings:batch", async (Guid deviceId, ReadingBatchR
     var result = await repository.IngestAsync(deviceId, request, ct);
     if (result.Conflict) return Results.Problem("A stored sequence contains different reading values.", statusCode: 409);
     return result.Response is { } response ? Results.Ok(response) : Results.NotFound();
+});
+
+app.MapGet("/api/v1/notifications", async (NotificationStore store, CancellationToken ct) => await store.ListAsync(ct));
+app.MapGet("/api/v1/notifications/push/configuration", async (NotificationStore store, CancellationToken ct) =>
+{
+    var subject = app.Configuration["WebPush:Subject"];
+    var identity = await store.IdentityAsync(PushValidation.ValidSubject(subject) ? subject! : "mailto:unconfigured@localhost", ct);
+    return new PushConfigurationDto(identity.PublicKey, PushValidation.ValidSubject(subject));
+});
+var notificationWrites = app.MapGroup("/api/v1/notifications/push").AddEndpointFilter(authorize);
+notificationWrites.MapPost("/subscriptions", async (PushSubscriptionRequest request, NotificationStore store, CancellationToken ct) =>
+{
+    if (!PushValidation.ValidSubscription(request))
+        return Results.Problem("Supply a valid browser subscription from Apple, Google, Mozilla, or Microsoft.", statusCode: 400);
+    if (!PushValidation.ValidSubject(app.Configuration["WebPush:Subject"]))
+        return Results.Problem("Set WebPush:Subject to your contact email URI or public HTTPS URL.", statusCode: 503);
+    await store.SubscribeAsync(request, ct);
+    return Results.Ok(new { subscribed = true });
+});
+notificationWrites.MapPost("/subscriptions/remove", async (RemovePushSubscriptionRequest request, NotificationStore store, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Endpoint) || request.Endpoint.Length > 4096) return Results.BadRequest();
+    await store.RemoveAsync(request.Endpoint, ct);
+    return Results.Ok(new { subscribed = false });
 });
 
 app.Run();

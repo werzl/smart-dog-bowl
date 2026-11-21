@@ -75,4 +75,10 @@ npm run build
 ```
 
 The command checks TypeScript and creates a static build in `dist/`.
-Production hosting and PWA installation remain future work.
+Production hosting remains future work. The manifest supports installation as a web app.
+
+## Bowl notifications
+
+Empty-bowl alerts appear in the app and reset after a refill.
+Web Push supports background notifications in compatible browsers and installed web apps.
+See the [notification guide](../server/NOTIFICATIONS.md) for mobile setup and empty/refill test requests.

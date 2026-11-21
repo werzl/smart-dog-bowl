@@ -24,6 +24,12 @@ import { getReadings, request, write } from "./api";
 import type { Calibration, Device, Reading, Status } from "./api";
 import WaterChart from "./WaterChart";
 import DrinkingPatterns from "./DrinkingPatterns";
+import {
+  useBowlNotifications,
+  NotificationBell,
+  EmptyBowlAlerts,
+  PushSettings,
+} from "./Notifications";
 
 type View = "Overview" | "History" | "Devices" | "Settings";
 const navigation = [
@@ -68,6 +74,7 @@ const isRecent = (status: Status) =>
   !!status.lastSeenAt && Date.now() - Date.parse(status.lastSeenAt) < 300_000;
 
 export default function App() {
+  const notifications = useBowlNotifications();
   const [view, setView] = useState<View>(readView);
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [selectedId, setSelectedId] = useState(
@@ -217,6 +224,7 @@ export default function App() {
             <span aria-current="page">{view}</span>
           </nav>
           <div className="topbar-right">
+            <NotificationBell {...notifications} />
             <span className="today">
               {new Date().toLocaleDateString("en-GB", {
                 weekday: "short",
@@ -230,6 +238,7 @@ export default function App() {
           </div>
         </header>
         <div className="page-body">
+          <EmptyBowlAlerts {...notifications} onSelect={selectDevice} />
           <div className="page-heading">
             <div>
               <p className="eyebrow">
@@ -577,6 +586,7 @@ export default function App() {
                       );
                     }}
                   />
+                  <PushSettings apiKey={apiKey} />
                   <CalibrationSettings
                     key={selectedId}
                     selected={selected}

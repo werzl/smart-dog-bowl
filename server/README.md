@@ -238,3 +238,9 @@ This setup stores raw measurements and calibration data.
 It now estimates candidate drinking patterns from stable weight changes. Confirmed sessions and a background classifier remain future work.
 It uses standard PostgreSQL. TimescaleDB extensions and retention rules remain future work.
 Wi-Fi credentials remain on the device. The server does not accept or store them.
+
+## Bowl notifications
+
+Empty-bowl alerts appear in the app and reset after a refill.
+Web Push supports background notifications in compatible browsers and installed web apps.
+See the [notification guide](NOTIFICATIONS.md) for mobile setup and empty/refill test requests.
