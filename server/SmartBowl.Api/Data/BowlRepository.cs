@@ -82,6 +82,21 @@ public sealed class BowlRepository(NpgsqlDataSource dataSource)
         return new(readings.ToArray(), hasMore ? readings[^1].Sequence : null);
     }
 
+    public async Task<WeightReadingDto[]> GetAnalysisReadingsAsync(Guid deviceId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    {
+        await using var command = dataSource.CreateCommand("""
+            SELECT sequence, observed_at, weight_grams, raw_reading FROM weight_readings
+            WHERE device_id = $1 AND observed_at >= $2 AND observed_at < $3
+            ORDER BY observed_at, sequence
+            """);
+        command.Parameters.AddWithValue(deviceId);
+        command.Parameters.AddWithValue(from.ToUniversalTime());
+        command.Parameters.AddWithValue(to.ToUniversalTime());
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        var readings = new List<WeightReadingDto>();
+        while (await reader.ReadAsync(ct)) readings.Add(ReadReading(reader));
+        return readings.ToArray();
+    }
     public async Task<IngestResult> IngestAsync(Guid deviceId, ReadingBatchRequest request, CancellationToken ct)
     {
         await using var connection = await dataSource.OpenConnectionAsync(ct);

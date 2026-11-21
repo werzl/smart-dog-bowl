@@ -1963,3 +1963,126 @@ td,
   outline-offset: 4px;
   border-radius: 4px;
 }
+
+.drinking-patterns {
+  margin-top: 26px;
+  padding: 24px;
+  background: #121d28;
+  border: 1px solid #a4eadc24;
+  border-radius: 14px;
+}
+.patterns-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 23px;
+}
+.patterns-heading h2 {
+  font-size: 1.125rem;
+  color: #e3f1f3;
+}
+.patterns-heading p {
+  color: #91a9ba;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-top: 7px;
+}
+.period-badge {
+  background: #a4eadc10;
+  border: 1px solid #a4eadc25;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  color: #b0d9d4;
+  white-space: nowrap;
+}
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+.pattern-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+.pattern-icon {
+  color: #9bddd7;
+  margin-bottom: 5px;
+}
+.pattern-label {
+  color: #a4b7ca;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.pattern-metric strong {
+  font-size: 1.375rem;
+  font-weight: 550;
+  color: #e6f6f5;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.pattern-hint {
+  color: #8aa2b7;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+.patterns-notes {
+  border-top: 1px solid #a4eadc13;
+  margin-top: 22px;
+  padding-top: 15px;
+}
+.patterns-notes p {
+  font-size: 0.75rem;
+  line-height: 1.8;
+  color: #8fa9bd;
+}
+.patterns-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: #f2b6ac;
+  font-size: 0.875rem;
+}
+.drinking-events {
+  margin-top: 15px;
+  border-top: 1px solid #a4eadc13;
+  padding-top: 15px;
+}
+.drinking-events summary {
+  color: #a5d9d2;
+  font-size: 0.875rem;
+  cursor: pointer;
+  width: fit-content;
+}
+.drinking-events .table-scroll {
+  margin-top: 14px;
+}
+@media (max-width: 1200px) {
+  .pattern-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 25px;
+  }
+}
+@media (max-width: 700px) {
+  .drinking-patterns {
+    padding: 20px 15px;
+  }
+  .patterns-heading {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .pattern-grid {
+    gap: 24px 14px;
+  }
+  .pattern-metric strong {
+    font-size: 1.125rem;
+  }
+  .pattern-label {
+    font-size: 0.875rem;
+  }
+}

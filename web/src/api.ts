@@ -73,3 +73,36 @@ export function write<T>(path: string, body: unknown, key: string): Promise<T> {
     body: JSON.stringify(body),
   });
 }
+export interface DrinkingEvent {
+  startedAt: string;
+  endedAt: string;
+  estimatedMilliliters: number;
+  durationSeconds: number | null;
+}
+export interface DrinkingSummary {
+  from: string;
+  to: string;
+  timeZone: string;
+  estimatedConsumedMilliliters: number;
+  mostConsumedHours: number[];
+  leastConsumedHours: number[];
+  averageDrinkDurationSeconds: number | null;
+  observedCoverageSeconds: number;
+  events: DrinkingEvent[];
+  classifierVersion: string;
+}
+export function getDrinkingSummary(
+  deviceId: string,
+  days: number,
+  signal: AbortSignal,
+): Promise<DrinkingSummary> {
+  const end = new Date();
+  const start = new Date(end.getTime() - days * 86_400_000);
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const parameters = new URLSearchParams({
+    from: start.toISOString(),
+    to: end.toISOString(),
+    timeZone,
+  });
+  return request(`/${deviceId}/drinking-summary?${parameters}`, { signal });
+}

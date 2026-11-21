@@ -202,6 +202,29 @@ public sealed class ApiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         var status = await client.GetFromJsonAsync<DeviceStatusDto>($"/api/v1/devices/{deviceId}/status");
         Assert.Equal(deviceId, status!.DeviceId);
     }
+    [PostgresFact]
+    public async Task DrinkingSummaryUsesTheRequestedPeriodAndRejectsInvalidQueries()
+    {
+        using var client = fixture.CreateClient();
+        const string id = "7e8c0d1a-6b39-47b5-928a-64f3f1039e21";
+        var status = await client.GetFromJsonAsync<DeviceStatusDto>($"/api/v1/devices/{id}/status");
+        var end = status!.LatestReading!.ObservedAt.AddSeconds(1);
+        var from = Uri.EscapeDataString(end.AddDays(-1).ToString("O"));
+        var to = Uri.EscapeDataString(end.ToString("O"));
+        var summary = await client.GetFromJsonAsync<DrinkingSummaryDto>($"/api/v1/devices/{id}/drinking-summary?from={from}&to={to}&timeZone=Europe%2FLondon");
+        Assert.InRange(summary!.EstimatedConsumedMilliliters, 640, 660);
+        Assert.NotEmpty(summary.MostConsumedHours);
+        Assert.NotEmpty(summary.LeastConsumedHours);
+        Assert.Null(summary.AverageDrinkDurationSeconds);
+        Assert.All(summary.Events, drink => Assert.Null(drink.DurationSeconds));
+        var shortFrom = Uri.EscapeDataString(end.AddHours(-1).ToString("O"));
+        var shortPeriod = await client.GetFromJsonAsync<DrinkingSummaryDto>($"/api/v1/devices/{id}/drinking-summary?from={shortFrom}&to={to}");
+        Assert.True(shortPeriod!.EstimatedConsumedMilliliters < summary.EstimatedConsumedMilliliters);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync($"/api/v1/devices/{id}/drinking-summary?timeZone=invalid-zone")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync($"/api/v1/devices/{id}/drinking-summary?to=0001-01-01T00:00:00Z")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync($"/api/v1/devices/{id}/drinking-summary?from={to}&to={from}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/v1/devices/df479026-ea8c-42bc-8e48-b62e2678d48e/drinking-summary")).StatusCode);
+    }
     private static async Task<Guid> CreateDevice(HttpClient client)
     {
         var id = Guid.NewGuid();

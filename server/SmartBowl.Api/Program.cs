@@ -4,6 +4,7 @@ using Microsoft.OpenApi;
 using Npgsql;
 using SmartBowl.Api;
 using SmartBowl.Api.Data;
+using SmartBowl.Api.Analysis;
 using SmartBowl.Contracts;
 using SmartBowl.ServiceDefaults;
 
@@ -84,6 +85,21 @@ devices.MapGet("/{deviceId}/readings", async (Guid deviceId, DateTimeOffset? fro
     return Results.Ok(await repository.GetReadingsAsync(deviceId, from, to, afterSequence ?? -1, limit ?? 100, ct));
 });
 
+devices.MapGet("/{deviceId}/drinking-summary", async (Guid deviceId, DateTimeOffset? from, DateTimeOffset? to,
+    string? timeZone, BowlRepository repository, CancellationToken ct) =>
+{
+    var end = to ?? DateTimeOffset.UtcNow;
+    var start = from ?? (end >= DateTimeOffset.MinValue.AddDays(1) ? end.AddDays(-1) : DateTimeOffset.MinValue);
+    if (start >= end || end - start > TimeSpan.FromDays(7) || end > DateTimeOffset.UtcNow.AddMinutes(5) || start < DateTimeOffset.MinValue.AddMinutes(5))
+        return Results.Problem("Use a past time range of at most seven days. Ensure that from precedes to.", statusCode: 400);
+    TimeZoneInfo zone;
+    try { zone = TimeZoneInfo.FindSystemTimeZoneById(timeZone ?? "UTC"); }
+    catch (TimeZoneNotFoundException) { return Results.Problem("Supply a valid time zone.", statusCode: 400); }
+    catch (InvalidTimeZoneException) { return Results.Problem("Supply a valid time zone.", statusCode: 400); }
+    if (await repository.GetStatusAsync(deviceId, ct) is null) return Results.NotFound();
+    var readings = await repository.GetAnalysisReadingsAsync(deviceId, start.AddMinutes(-5), end.AddMinutes(5), ct);
+    return Results.Ok(DrinkingAnalyzer.Summarize(readings, start, end, zone));
+}).Produces<DrinkingSummaryDto>().ProducesProblem(400).Produces(404);
 Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> authorize = async (context, next) =>
 {
     var supplied = context.HttpContext.Request.Headers["X-Device-Key"].ToString();

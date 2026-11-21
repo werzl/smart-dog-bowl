@@ -182,6 +182,36 @@ Reading queries accept these parameters:
 Use `nextAfterSequence` from a response as the next cursor. A null cursor means that no further page exists at query time.
 The API stores timestamps in UTC. PostgreSQL stores timestamp values with microsecond precision.
 
+## Drinking summaries
+
+`GET /api/v1/devices/{deviceId}/drinking-summary?from=&to=&timeZone=Europe/London`
+
+The endpoint accepts a past range of at most seven days. It defaults to the last 24 hours and UTC.
+The response includes estimated consumption, busiest and quietest local hours, and candidate events with optional durations.
+The UI supplies the browser's time zone and the selected time range.
+The server reads five minutes of context on each side of the range to identify stable weights near its boundaries.
+The total includes only candidates that start and end inside the selected range.
+
+Detector `plateau-v1` applies these rules:
+
+- A stable weight needs at least three readings across at least two seconds, with variation of at most 1 g.
+- A candidate needs a stable drop from 5 g to 250 g. Refills and larger changes do not count.
+- A change must finish within five minutes. Readings outside the initial and final weights indicate a disturbance.
+- A gap longer than 90 seconds resets detection. The detector does not infer a drink across that gap.
+
+The current calculation uses 1 g per mL. Spills can still resemble drinking.
+These thresholds are preliminary. Compare results with labelled device traces before treating candidates as confirmed drinks.
+The server calculates candidates on request and preserves all raw readings.
+
+Duration measures the observed weight-change interval. It does not directly measure the pet's activity.
+Every reading gap across the event and stable confirmation must be at most two seconds for a duration estimate.
+The minute-spaced mock data can support candidate intake estimates, but its duration values remain null.
+The average duration uses only events with a measurable duration.
+
+Time-of-day comparisons require at least 30 minutes of coverage for an hour of the day.
+They compare intake per observed hour and report all ties. Events belong to the local hour when they start. Unobserved hours do not become zero-intake hours.
+The response includes observed coverage so the UI can identify incomplete periods.
+
 ## Tests
 
 Run the contract tests:
@@ -205,6 +235,6 @@ Tests cover seed repetition, calibration, paging, validation, authentication, co
 ## Current scope
 
 This setup stores raw measurements and calibration data.
-Drinking analysis remains future work.
+It now estimates candidate drinking patterns from stable weight changes. Confirmed sessions and a background classifier remain future work.
 It uses standard PostgreSQL. TimescaleDB extensions and retention rules remain future work.
 Wi-Fi credentials remain on the device. The server does not accept or store them.

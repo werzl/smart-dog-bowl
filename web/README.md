@@ -35,7 +35,7 @@ Set `PORT` before startup if the UI needs another port.
 ## Current features
 
 - Overview: latest bowl weight, last upload time, and measured weight range.
-- History: weight chart, time filters, paged readings, and CSV export.
+- History: weight chart, Drinking patterns card, time filters, paged readings, and CSV export.
 - Devices: bowl selection, device GUIDs, and registration.
 - Settings: device API key and calibration values.
 - Layout: side navigation on desktop and bottom navigation on mobile.
@@ -55,7 +55,15 @@ Save the key in Settings, or enter it when you add a bowl.
 The UI keeps the saved key in `sessionStorage` for the current tab.
 Each new bowl receives a GUID from `crypto.randomUUID()`.
 
-The chart shows measured weights. Battery levels remain unavailable.
+The chart shows measured weights. The Drinking patterns card uses the server's preliminary detector to estimate consumption from candidate events.
+The card follows the selected bowl and the 24-hour or 7-day range.
+It shows estimated consumption, the busiest and quietest hours, and average duration when samples support it.
+The event details list each candidate's estimated amount and duration.
+The API excludes unobserved hours from quietest-time comparisons and reports equal hours as ties.
+
+Duration requires readings at most two seconds apart. The minute-spaced mock samples therefore show an unavailable duration.
+Spills can resemble drinks, so the card labels consumption as an estimate.
+Battery levels remain unavailable.
 Calibration changes preserve stored weights.
 
 ## Build

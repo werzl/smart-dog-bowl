@@ -23,6 +23,7 @@ import {
 import { getReadings, request, write } from "./api";
 import type { Calibration, Device, Reading, Status } from "./api";
 import WaterChart from "./WaterChart";
+import DrinkingPatterns from "./DrinkingPatterns";
 
 type View = "Overview" | "History" | "Devices" | "Settings";
 const navigation = [
@@ -480,6 +481,13 @@ export default function App() {
                       <Range days={days} setDays={setDays} />
                     </div>
                   </div>
+                  <DrinkingPatterns
+                    key={`patterns-${selectedId}-${days}`}
+                    deviceId={selectedId}
+                    days={days}
+                    revision={revision}
+                    onRetry={refresh}
+                  />
                   <WaterChart
                     readings={readings}
                     loading={chartLoading}
