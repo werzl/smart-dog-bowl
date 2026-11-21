@@ -1,0 +1,59 @@
+@baseUrl = http://localhost:5200
+@deviceKey = local-development-key
+
+GET {{baseUrl}}/health
+
+###
+GET {{baseUrl}}/api/v1/devices
+
+###
+GET {{baseUrl}}/api/v1/devices/7e8c0d1a-6b39-47b5-928a-64f3f1039e21/status
+
+###
+GET {{baseUrl}}/api/v1/devices/7e8c0d1a-6b39-47b5-928a-64f3f1039e21/readings?limit=10
+
+###
+POST {{baseUrl}}/api/v1/devices
+Content-Type: application/json
+X-Device-Key: {{deviceKey}}
+
+{
+  "deviceId": "f7261df5-7395-4ee0-8be5-3b0f4dd45e3e",
+  "name": "Kitchen bowl",
+  "calibration": {
+    "zero_offset": -120000,
+    "calibration_factor": -420.5
+  }
+}
+
+###
+POST {{baseUrl}}/api/v1/devices/f7261df5-7395-4ee0-8be5-3b0f4dd45e3e/calibration
+Content-Type: application/json
+X-Device-Key: {{deviceKey}}
+
+{
+  "zero_offset": -120000,
+  "calibration_factor": -420.5
+}
+
+###
+POST {{baseUrl}}/api/v1/devices/f7261df5-7395-4ee0-8be5-3b0f4dd45e3e/readings:batch
+Content-Type: application/json
+X-Device-Key: {{deviceKey}}
+
+{
+  "batchId": "bowl-02-00001",
+  "readings": [
+    {
+      "sequence": 1,
+      "observedAt": "2026-11-21T12:00:00Z",
+      "rawReading": -477530.125,
+      "weightGrams": 850.25
+    },
+    {
+      "sequence": 2,
+      "observedAt": "2026-11-21T12:00:01Z",
+      "weightGrams": 849.0
+    }
+  ]
+}

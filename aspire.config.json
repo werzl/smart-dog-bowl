@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "server/SmartBowl.AppHost/SmartBowl.AppHost.csproj"
+  }
+}

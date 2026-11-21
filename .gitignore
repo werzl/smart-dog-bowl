@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+.vs/
+.tools/
+.local/
+TestResults/
+src/settings.local.py
+src/calibration.json
+**/__pycache__/
+**/node_modules/
+web/dist/
+*.tsbuildinfo

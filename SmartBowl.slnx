@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/server/">
+    <Project Path="server/SmartBowl.Api/SmartBowl.Api.csproj" />
+    <Project Path="server/SmartBowl.AppHost/SmartBowl.AppHost.csproj" />
+    <Project Path="server/SmartBowl.Contracts/SmartBowl.Contracts.csproj" />
+    <Project Path="server/SmartBowl.ServiceDefaults/SmartBowl.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmartBowl.Api.Tests/SmartBowl.Api.Tests.csproj" />
+  </Folder>
+</Solution>
